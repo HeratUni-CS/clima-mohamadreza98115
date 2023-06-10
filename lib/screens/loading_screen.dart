@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:clima/services/location.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert' as convert;
+
+const apiKey = 'a4d3feec9e573c25a0e853774ba5bc75';
 
 class LoadingScreen extends StatefulWidget {
   @override
@@ -8,22 +11,29 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreenState extends State<LoadingScreen> {
+  late double latitude;
+  late double longitude;
+
   void getLocation() async {
     Location location = Location();
     await location.getCurrentLocation();
+    latitude = location.latitude;
+    longitude = location.longitude;
+     getData();
   }
 
   void getData() async {
-
-    var url = Uri.parse('https://api.openweathermap.org/data/2.5/weather?lat=44.34&lon=10.99&appid=a4d3feec9e573c25a0e853774ba5bc75');
+    var url = Uri.parse(
+        'https://api.openweathermap.org/data/2.5/weather?lat=$latitude&lon=$longitude&appid=$apiKey');
 
     http.Response response = await http.get(url);
 
     if (response.statusCode == 200) {
       String data = response.body;
-      print(data);
-    }
-    else {
+      double temprature = convert.jsonDecode(data)['main']['temp'];
+      int condition = convert.jsonDecode(data)['weather'][0]['id'];
+      String cityName = convert.jsonDecode(data)['name'];
+    } else {
       print(response.statusCode);
     }
   }
@@ -34,7 +44,6 @@ class _LoadingScreenState extends State<LoadingScreen> {
     // TODO: implement initState
     super.initState();
     getLocation();
-    getData();
   }
 
 // this is Willunmount life cycle method used in flutter.
